@@ -1,0 +1,75 @@
+#+title: AUEB - Databases course - Project 2 report
+#+author: Giorgos Athanasopoulos
+#+email: athanassopoulosg@gmail.com
+#+description: (Compiled to PDF from Linux-x64 using GNU-Emacs) Project 2 report for the databases course @ aueb.gr
+#+options: num:nil
+#+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-readtheorg.setup
+
+* Βήμα Α - Δημιουργία πινάκων και import δεδομένων
+- Για τη δημιουργία όλων των πινάκων, (εκτός από των 2 που αφορούν το keywords.csv για το οποίο θα μιλήσουμε στο βήμα B) χρησιμοποιώντας το SQL server import extension του azure data studio, κάναμε import τα data files μέσω του import wizard.
+- Αλλάξαμε τους default τύπους τιμών σε int για ακέραιους, float για δεκαδικούς και nvarchar(MAX) για strings (default στα υπόλοιπα).
+- Σε ορισμένα αρχεία (κυρίως movie.csv) χρειάστηκε να ενεργοποιήσουμε την επιλογή ALLOW NULLS, διότι κάποια πεδία τους ήταν κενά.
+
+* Βήμα Β - Ισοπέδωση keyword.csv
+- Για τη δημιουργία των πινάκων keyword και hasKeyword, χρησιμοποιήσαμε τον κώδικα που βρίσκεται στο αρχείο.
+#+begin_src bash
+src/flatten_keywords.csv.py
+#+end_src
+Γενικά:
+- csv.reader: Για να διαβάσουμε το keywords.csv και να πάρουμε τα 2 μέρη σε κάθε σειρά: id, keywords,
+- ast.literal_eval: Για να μετατρέψουμε τα keywords από string σε json αντικείμενο,
+- Με wrapper classes και helper functions γύρω από τα δεδομένα ελέγχουμε τα constraints και γράφουμε τα αποτελέσματα στα αρχεία
+#+begin_src bash
+data/dataset/keyword.csv
+data/dataset/hasKeyword.csv
+#+end_src
+Για περισσότερες πληροφορίες σχετικά με τον κώδικα στο αρχείο συμβουλευτείτε τα σχόλια που περιέχει.
+
+* Βήμα Γ - Πρωτεύοντα και ξένα κλειδία
+- Για τα πρωτεύοντα κλειδιά των πινάκων:
+Σύνταξη:
+#+begin_src sql
+alter table [dbo].[<<tablename>>] add constraint <<keyname>> primary key (<<columnlist>>);
+#+end_src
+  - movie:
+    - id: Το μόνο πεδίο που αρμόζει να είναι πρωτεύον κλειδί.
+  - genre:
+    - id: Το μόνο πεδίο που αρμόζει να είναι πρωτεύον κλειδί.
+  - productioncompany:
+    - id: Το μόνο πεδίο που αρμόζει να είναι πρωτεύον κλειδί.
+  - collection:
+    - id: Το μόνο πεδίο που αρμόζει να είναι πρωτεύον κλειδί.
+  - movie_cast:
+    - cid: Σαν unique identifier για movie_cast και movie_crew.
+    - movie_id: Διότι έχουμε πολλούς ηθοποιούς για κάθε ταινία.
+    - person_id: Διότι το ίδιο άτομο μπορεί να παίζει κάποιο ρόλο σε 2 ή παραπάνω ταινίες.
+  - movie_crew:
+    - cid: Σαν unique identifier για movie_cast και movie_crew.
+    - movie_id: Διότι έχουμε πολλούς συνεργάτες για κάθε ταινία.
+    - person_id: Διότι το ίδιο άτομο μπορεί να συμμετάσχει στη παραγωγή 2 ή περισσοτέρων ταινιών.
+  - keyword:
+    - id: Το μόνο πεδίο που αρμόζει να είναι πρωτεύον κλειδί
+
+- Για τα ξένα κλειδία των πινάκων:
+Σύνταξη:
+#+begin_src sql
+alter table [dbo].[<<tablename>>] add constraint <<keyname>> foreign key <<columnname>> references <<tablename>>(<<columnname>>);
+#+end_src
+  - belongsTocollection:
+    - movie_id: Χρησιμοποιεί το id μίας ταινίας από τον πίνακα movie.
+    - collection_id: Χρησιμοποιεί το id ενός collection από τον πίνακα collection.
+  - hasGenre:
+    - movie_id: Χρησιμοποιεί το id από τον πίνακα movie.
+    - genre_id: Χρησιμοποιεί το id ενός genre από τον πίνακα genre.
+  - hasProductionCompany:
+    - movie_id: Χρησιμοποιεί το id από τον πίνακα movie.
+    - pc_id: Χρησιμοποιεί το id ενός productcompany από τον πίνακα productcompany.
+  - ratings:
+    - movie_id: Χρησιμοποιεί το id από τον πίνακα movie.
+  - movie_cast:
+    - movie_id: Χρησιμοποιεί το id από τον πίνακα movie.
+  - movie_crew:
+    - movie_id: Χρησιμοποιεί το id από τον πίνακα movie.
+  - hasKeyword:
+    - movie_id: Χρησιμοποιεί το id από τον πίνακα movie.
+    - keyword_id: Χρησιμοποιεί το id ενός από τα keyword του πίνακα keyword.

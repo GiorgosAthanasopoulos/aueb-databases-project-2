@@ -1,0 +1,6 @@
+Γεώργιος Αθανασόπουλος - p3210265
+Αναστασία Ανδρομιδά - p3210008
+Endpoint: mysqlserver3210265.database.windows.net
+Username: examiner
+Password: Letmein123
+Database: ExercisesDatabase

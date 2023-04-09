@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2023-04-09 Κυρ 06:34 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AUEB - Databases course - Project 2 report</title>
+<meta name="author" content="Giorgos Athanasopoulos" />
+<meta name="description" content="(Compiled to PDF from Linux-x64 using GNU-Emacs) Project 2 report for the databases course @ aueb.gr" />
+<meta name="generator" content="Org Mode" />
+<link rel="stylesheet" type="text/css" href="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/css/htmlize.css"/>
+<link rel="stylesheet" type="text/css" href="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/css/readtheorg.css"/>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="https://fniessen.github.io/org-html-themes/src/lib/js/jquery.stickytableheaders.min.js"></script>
+<script type="text/javascript" src="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/js/readtheorg.js"></script>
+</head>
+<body>
+<div id="content" class="content">
+<h1 class="title">AUEB - Databases course - Project 2 report</h1>
+<div id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#org9e2f68a">Βήμα Α - Δημιουργία πινάκων και import δεδομένων</a></li>
+<li><a href="#org23da51c">Βήμα Β - Ισοπέδωση keyword.csv</a></li>
+<li><a href="#org545b11f">Βήμα Γ - Πρωτεύοντα και ξένα κλειδία</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org9e2f68a" class="outline-2">
+<h2 id="org9e2f68a">Βήμα Α - Δημιουργία πινάκων και import δεδομένων</h2>
+<div class="outline-text-2" id="text-org9e2f68a">
+<ul class="org-ul">
+<li>Για τη δημιουργία όλων των πινάκων, (εκτός από των 2 που αφορούν το keywords.csv για το οποίο θα μιλήσουμε στο βήμα B) χρησιμοποιώντας το SQL server import extension του azure data studio, κάναμε import τα data files μέσω του import wizard.</li>
+<li>Αλλάξαμε τους default τύπους τιμών σε int για ακέραιους, float για δεκαδικούς και nvarchar(MAX) για strings (default στα υπόλοιπα).</li>
+<li>Σε ορισμένα αρχεία (κυρίως movie.csv) χρειάστηκε να ενεργοποιήσουμε την επιλογή ALLOW NULLS, διότι κάποια πεδία τους ήταν κενά.</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org23da51c" class="outline-2">
+<h2 id="org23da51c">Βήμα Β - Ισοπέδωση keyword.csv</h2>
+<div class="outline-text-2" id="text-org23da51c">
+<ul class="org-ul">
+<li>Για τη δημιουργία των πινάκων keyword και hasKeyword, χρησιμοποιήσαμε τον κώδικα που βρίσκεται στο αρχείο.</li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-bash">src/flatten_keywords.csv.py
+</pre>
+</div>
+<p>
+Γενικά:
+</p>
+<ul class="org-ul">
+<li>csv.reader: Για να διαβάσουμε το keywords.csv και να πάρουμε τα 2 μέρη σε κάθε σειρά: id, keywords,</li>
+<li>ast.literal<sub>eval</sub>: Για να μετατρέψουμε τα keywords από string σε json αντικείμενο,</li>
+<li>Με wrapper classes και helper functions γύρω από τα δεδομένα ελέγχουμε τα constraints και γράφουμε τα αποτελέσματα στα αρχεία</li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-bash">data/dataset/keyword.csv
+data/dataset/hasKeyword.csv
+</pre>
+</div>
+<p>
+Για περισσότερες πληροφορίες σχετικά με τον κώδικα στο αρχείο συμβουλευτείτε τα σχόλια που περιέχει.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org545b11f" class="outline-2">
+<h2 id="org545b11f">Βήμα Γ - Πρωτεύοντα και ξένα κλειδία</h2>
+<div class="outline-text-2" id="text-org545b11f">
+<ul class="org-ul">
+<li>Για τα πρωτεύοντα κλειδιά των πινάκων:</li>
+</ul>
+<p>
+Σύνταξη:
+</p>
+<div class="org-src-container">
+<pre class="src src-sql"><span style="color: #51afef;">alter</span> <span style="color: #51afef;">table</span> [dbo].[&lt;&lt;tablename&gt;&gt;] <span style="color: #51afef;">add</span> <span style="color: #51afef;">constraint</span> &lt;&lt;keyname&gt;&gt; <span style="color: #51afef;">primary</span> <span style="color: #51afef;">key</span> (&lt;&lt;columnlist&gt;&gt;);
+</pre>
+</div>
+<ul class="org-ul">
+<li>movie:
+<ul class="org-ul">
+<li>id: Το μόνο πεδίο που αρμόζει να είναι πρωτεύον κλειδί.</li>
+</ul></li>
+<li>genre:
+<ul class="org-ul">
+<li>id: Το μόνο πεδίο που αρμόζει να είναι πρωτεύον κλειδί.</li>
+</ul></li>
+<li>productioncompany:
+<ul class="org-ul">
+<li>id: Το μόνο πεδίο που αρμόζει να είναι πρωτεύον κλειδί.</li>
+</ul></li>
+<li>collection:
+<ul class="org-ul">
+<li>id: Το μόνο πεδίο που αρμόζει να είναι πρωτεύον κλειδί.</li>
+</ul></li>
+<li>movie<sub>cast</sub>:
+<ul class="org-ul">
+<li>cid: Σαν unique identifier για movie<sub>cast</sub> και movie<sub>crew</sub>.</li>
+<li>movie<sub>id</sub>: Διότι έχουμε πολλούς ηθοποιούς για κάθε ταινία.</li>
+<li>person<sub>id</sub>: Διότι το ίδιο άτομο μπορεί να παίζει κάποιο ρόλο σε 2 ή παραπάνω ταινίες.</li>
+</ul></li>
+<li>movie<sub>crew</sub>:
+<ul class="org-ul">
+<li>cid: Σαν unique identifier για movie<sub>cast</sub> και movie<sub>crew</sub>.</li>
+<li>movie<sub>id</sub>: Διότι έχουμε πολλούς συνεργάτες για κάθε ταινία.</li>
+<li>person<sub>id</sub>: Διότι το ίδιο άτομο μπορεί να συμμετάσχει στη παραγωγή 2 ή περισσοτέρων ταινιών.</li>
+</ul></li>
+<li>keyword:
+<ul class="org-ul">
+<li>id: Το μόνο πεδίο που αρμόζει να είναι πρωτεύον κλειδί</li>
+</ul></li>
+</ul>
+<ul class="org-ul">
+<li>Για τα ξένα κλειδία των πινάκων:</li>
+</ul>
+<p>
+Σύνταξη:
+</p>
+<div class="org-src-container">
+<pre class="src src-sql"><span style="color: #51afef;">alter</span> <span style="color: #51afef;">table</span> [dbo].[&lt;&lt;tablename&gt;&gt;] <span style="color: #51afef;">add</span> <span style="color: #51afef;">constraint</span> &lt;&lt;keyname&gt;&gt; <span style="color: #51afef;">foreign</span> <span style="color: #51afef;">key</span> &lt;&lt;columnname&gt;&gt; <span style="color: #51afef;">references</span> &lt;&lt;tablename&gt;&gt;(&lt;&lt;columnname&gt;&gt;);
+</pre>
+</div>
+<ul class="org-ul">
+<li>belongsTocollection:
+<ul class="org-ul">
+<li>movie<sub>id</sub>: Χρησιμοποιεί το id μίας ταινίας από τον πίνακα movie.</li>
+<li>collection<sub>id</sub>: Χρησιμοποιεί το id ενός collection από τον πίνακα collection.</li>
+</ul></li>
+<li>hasGenre:
+<ul class="org-ul">
+<li>movie<sub>id</sub>: Χρησιμοποιεί το id από τον πίνακα movie.</li>
+<li>genre<sub>id</sub>: Χρησιμοποιεί το id ενός genre από τον πίνακα genre.</li>
+</ul></li>
+<li>hasProductionCompany:
+<ul class="org-ul">
+<li>movie<sub>id</sub>: Χρησιμοποιεί το id από τον πίνακα movie.</li>
+<li>pc<sub>id</sub>: Χρησιμοποιεί το id ενός productcompany από τον πίνακα productcompany.</li>
+</ul></li>
+<li>ratings:
+<ul class="org-ul">
+<li>movie<sub>id</sub>: Χρησιμοποιεί το id από τον πίνακα movie.</li>
+</ul></li>
+<li>movie<sub>cast</sub>:
+<ul class="org-ul">
+<li>movie<sub>id</sub>: Χρησιμοποιεί το id από τον πίνακα movie.</li>
+</ul></li>
+<li>movie<sub>crew</sub>:
+<ul class="org-ul">
+<li>movie<sub>id</sub>: Χρησιμοποιεί το id από τον πίνακα movie.</li>
+</ul></li>
+<li>hasKeyword:
+<ul class="org-ul">
+<li>movie<sub>id</sub>: Χρησιμοποιεί το id από τον πίνακα movie.</li>
+<li>keyword<sub>id</sub>: Χρησιμοποιεί το id ενός από τα keyword του πίνακα keyword.</li>
+</ul></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Giorgos Athanasopoulos</p>
+<p class="date">Created: 2023-04-09 Κυρ 06:34</p>
+</div>
+</body>
+</html>
